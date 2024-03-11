@@ -1,0 +1,598 @@
+Program.Sub.ScreenSU.Start
+gui.SS_Form1..create
+gui.SS_Form1..caption("Auto PO Lines Create")
+gui.SS_Form1..size(3255,2595)
+gui.SS_Form1..minx(0)
+gui.SS_Form1..miny(0)
+gui.SS_Form1..position(0,0)
+gui.SS_Form1..event(unload,ss_form1_unload)
+gui.SS_Form1..alwaysontop(False)
+gui.SS_Form1..fontname("Arial")
+gui.SS_Form1..fontsize(8)
+gui.SS_Form1..forecolor(0)
+gui.SS_Form1..fontstyle(,,,,)
+gui.SS_Form1..BackColor(-2147483633)
+gui.SS_Form1..controlbox(True)
+gui.SS_Form1..maxbutton(False)
+gui.SS_Form1..minbutton(False)
+gui.SS_Form1..mousepointer(0)
+gui.SS_Form1..moveable(True)
+gui.SS_Form1..sizeable(False)
+gui.SS_Form1..ShowInTaskBar(True)
+gui.SS_Form1..titlebar(True)
+gui.SS_Form1.lbl_txtPO.create(label,"PO#",True,1800,200,1,100,135,True,0,Arial,8,-2147483633,0)
+gui.SS_Form1.lbl_txtPO.defaultvalue("")
+gui.SS_Form1.lbl_txtPO.controlgroup(0)
+gui.SS_Form1.txtPO.create(textbox,"",True,1800,330,0,100,335,True,0,Arial,8,16777215,1)
+gui.SS_Form1.txtPO.defaultvalue("")
+gui.SS_Form1.txtPO.controlgroup(0)
+gui.SS_Form1.cmd_txtPO.create(button)
+gui.SS_Form1.cmd_txtPO.caption("^")
+gui.SS_Form1.cmd_txtPO.visible(True)
+gui.SS_Form1.cmd_txtPO.size(330,330)
+gui.SS_Form1.cmd_txtPO.zorder(0)
+gui.SS_Form1.cmd_txtPO.position(1985,335)
+gui.SS_Form1.cmd_txtPO.enabled(True)
+gui.SS_Form1.cmd_txtPO.fontname("Arial")
+gui.SS_Form1.cmd_txtPO.fontsize(8)
+gui.SS_Form1.cmd_txtPO.event(click,cmd_txtpo_click)
+gui.SS_Form1.cmd_txtPO.defaultvalue("")
+gui.SS_Form1.cmd_txtPO.controlgroup(0)
+gui.SS_Form1.lbl_txtWO.create(label,"Job",True,1800,200,1,100,750,True,0,Arial,8,-2147483633,0)
+gui.SS_Form1.lbl_txtWO.defaultvalue("")
+gui.SS_Form1.lbl_txtWO.controlgroup(0)
+gui.SS_Form1.txtWO.create(textbox,"",True,1170,330,0,100,950,True,0,Arial,8,16777215,1)
+gui.SS_Form1.txtWO.defaultvalue("")
+gui.SS_Form1.txtWO.controlgroup(0)
+gui.SS_Form1.lbl_txtSuffix.create(label,"Suffix",True,1800,200,1,1390,730,True,0,Arial,8,-2147483633,0)
+gui.SS_Form1.lbl_txtSuffix.defaultvalue("")
+gui.SS_Form1.lbl_txtSuffix.controlgroup(0)
+gui.SS_Form1.txtSuffix.create(textbox,"",True,660,330,0,1370,945,True,0,Arial,8,16777215,1)
+gui.SS_Form1.txtSuffix.defaultvalue("")
+gui.SS_Form1.txtSuffix.controlgroup(0)
+gui.SS_Form1.cmd_txtSuffix.create(button)
+gui.SS_Form1.cmd_txtSuffix.caption("^")
+gui.SS_Form1.cmd_txtSuffix.visible(True)
+gui.SS_Form1.cmd_txtSuffix.size(330,330)
+gui.SS_Form1.cmd_txtSuffix.zorder(0)
+gui.SS_Form1.cmd_txtSuffix.position(2100,930)
+gui.SS_Form1.cmd_txtSuffix.enabled(True)
+gui.SS_Form1.cmd_txtSuffix.fontname("Arial")
+gui.SS_Form1.cmd_txtSuffix.fontsize(8)
+gui.SS_Form1.cmd_txtSuffix.event(click,cmd_txtsuffix_click)
+gui.SS_Form1.cmd_txtSuffix.defaultvalue("")
+gui.SS_Form1.cmd_txtSuffix.controlgroup(0)
+gui.SS_Form1.cmdCreate.create(button)
+gui.SS_Form1.cmdCreate.caption("Create")
+gui.SS_Form1.cmdCreate.visible(True)
+gui.SS_Form1.cmdCreate.size(1000,360)
+gui.SS_Form1.cmdCreate.zorder(0)
+gui.SS_Form1.cmdCreate.position(90,1400)
+gui.SS_Form1.cmdCreate.enabled(True)
+gui.SS_Form1.cmdCreate.fontname("Arial")
+gui.SS_Form1.cmdCreate.fontsize(8)
+gui.SS_Form1.cmdCreate.event(click,cmdcreate_click)
+gui.SS_Form1.cmdCreate.defaultvalue("")
+gui.SS_Form1.cmdCreate.controlgroup(0)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Variable.Global.sJob.Declare(String)
+Variable.Global.sSuffix.Declare(String)
+Variable.Global.sPO.Declare(String)
+Variable.Global.sUpload.Declare(String)
+Variable.Global.sVCurr.Declare(String)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Quote 5203
+'Coded bY TRT
+'3/28/14
+'Spindle Stairs and Railings
+
+
+
+'open conneciton
+F.ODBC.Connection!conX.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+
+'show our form.
+Gui.SS_Form1..Show
+Gui.SS_Form1.txtPO.SetFocus
+
+
+
+Program.Sub.Main.End
+
+program.sub.ss_form1_unload.start
+F.ODBC.Connection!conX.Close
+F.Intrinsic.Control.End
+
+program.sub.ss_form1_unload.end
+
+program.sub.cmd_txtpo_click.start
+F.Intrinsic.Control.SetErrorHandler("cmd_txtpo_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sRet.Declare(String)
+
+'PO Browser
+Function.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+'common po broser
+F.Intrinsic.UI.Browser(4000,"",V.Local.sRet)
+F.Intrinsic.Control.If(V.Local.sRet,=,"***CANCEL***")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.SS_Form1.txtPO.Text(V.Local.sRet(0))
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmd_txtpo_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmd_txtpo_click.end
+
+program.sub.cmd_txtsuffix_click.start
+F.Intrinsic.Control.SetErrorHandler("cmd_txtsuffix_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sRet.Declare(String)
+
+'Work Order Browser
+Function.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+F.Intrinsic.UI.Browser(1000,"",V.Local.sRet)
+'F.Intrinsic.Debug.InvokeDebugger
+'
+
+F.Intrinsic.Control.If(V.Local.sRet,=,"***CANCEL***")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.SS_Form1.txtWO.Text(V.Local.sRet(0))
+	Gui.SS_Form1.txtSuffix.Text(V.Local.sRet(1))
+F.Intrinsic.Control.EndIf
+
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmd_txtsuffix_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmd_txtsuffix_click.end
+
+program.sub.cmdcreate_click.start
+F.Intrinsic.Control.SetErrorHandler("cmdcreate_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.iC.Declare(Long)
+
+
+V.global.sPO.Set(V.Screen.SS_Form1!txtPO.Text)
+V.global.sJob.Set(V.screen.SS_Form1!txtWO.Text)
+V.global.sSuffix.Set(V.Screen.SS_Form1!txtSuffix.Text)
+Gui.SS_Form1..Visible(False)
+
+'make sure they enteres something onto the text boxes.
+F.Intrinsic.Control.If(V.global.sPO.Trim,=,"")
+	F.Intrinsic.UI.Msgbox("PO # can not be blank.","Missing Data...",64)
+	Gui.SS_Form1.txtPO.SetFocus
+	Gui.SS_Form1..Visible(True)
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.ElseIf(V.global.sJob.Trim,=,"")
+	F.Intrinsic.UI.Msgbox("Job # can not be blank.","Missing Data",64)
+	Gui.SS_Form1.txtWO.SetFocus
+	Gui.SS_Form1..Visible(True)
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Else
+	'validate our PO exists, won't worry about Job just yet.
+	F.Intrinsic.String.Build("Select * From V_PO_Header Where Purchase_Order = '{0}'",v.global.sPO.Trim,v.Local.sSQL)
+	F.ODBC.Connection!conX.OpenRecordsetRO("rstPO",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.conX!rstPO.EOF,=,True)
+		F.Intrinsic.String.Concat("PO # ",V.Local.sPO.Trim," does not exist.",V.Local.sSQL)
+		F.Intrinsic.UI.Msgbox(V.Local.sSQL,"PO not found...",64)
+		Gui.SS_Form1..Visible(True)
+		Gui.SS_Form1.txtPO.SetFocus
+		F.ODBC.conX!rstPO.Close
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.Else
+		'we know po exists, check job., but also check to make sure that our PO Lines are not found.
+		F.Intrinsic.String.Build("Select * From V_PO_Lines Where Purchase_Order = '{0}'",v.global.sPO.Trim,v.Local.sSQL)
+		F.ODBC.Connection!conX.OpenLocalRecordsetRO("rstPOL",V.Local.sSQL)
+		F.Intrinsic.Control.If(V.ODBC.conX!rstPOL.EOF,<>,True)
+			'meaning lines exist and we can't ahve that now can we.
+			f.Intrinsic.String.Build("PO# {0} has existing lines.  Please choose another PO for upload.",v.Global.sPO.Trim,v.Local.sSQL)
+			F.Intrinsic.UI.Msgbox(V.Local.sSQL,"PO Lines exist...")
+			F.ODBC.conX!rstPO.Close
+			F.ODBC.conX!rstPOL.Close
+			Gui.SS_Form1..Visible(True)
+		Gui.SS_Form1.txtPO.SetFocus
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.Else
+			F.ODBC.conX!rstPOL.Close
+			F.Intrinsic.String.Build("Select * From Job_Header Where Job = '{0}' And Suffix = '{1}'",V.global.sJob.Trim,V.global.sSuffix.Trim,V.Local.sSQL)
+			F.ODBC.Connection!conX.OpenRecordSetRO("rstWO",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.conX!rstWO.EOF,=,True)
+				'either this wo don't exist or we have
+				F.Intrinsic.String.Build("Work order, {0}  {1}, doest not exist.",V.global.sJob.Trim,V.Global.sSuffix.Trim,V.Local.sSQL)
+				F.Intrinsic.UI.Msgbox(V.Local.sSQL,"Work Order not found...",64)
+				Gui.SS_Form1..Visible(True)
+				Gui.SS_Form1.txtWO.SetFocus
+				F.ODBC.conX!rstWO.Close
+				F.Intrinsic.Control.ExitSub
+			F.Intrinsic.Control.Else
+				F.Intrinsic.UI.InvokeWaitDialog("Uploading Purchase Order Lines...")
+				'meaning yay it exists.so here we go
+				'first call our header record builder
+				F.Intrinsic.Control.CallSub(Recorda)
+				F.Intrinsic.Control.CallSub(Recordbc)
+				'then call our po line builder
+				F.Intrinsic.Control.CallSub(Poline)
+				'then call build file to save the string to a file, and call upload
+				F.Intrinsic.Control.CallSub(Buildfile)
+				'call upload
+				F.Intrinsic.Control.CallSub(Uplpuror_call)
+				F.Intrinsic.UI.CloseWaitDialog
+				'see if we want to open the po to view it.
+			F.Intrinsic.Control.CallSub(Open_po)
+
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdcreate_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmdcreate_click.end
+
+Program.Sub.BuildFile.Start
+F.Intrinsic.Control.SetErrorHandler("BuildFile_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sFilePath.Declare(String)
+V.Local.bExists.Declare(Boolean)
+
+f.Intrinsic.String.Build("{0}\PUORD{1}.txt",v.caller.filesdir,V.Caller.CompanyCode,v.local.sFilePath)
+'F.Intrinsic.File.DeleteFile(V.Local.sFilePath)
+'F.Intrinsic.File.Exists(V.Local.sFilePath,V.Local.bExists)
+'F.Intrinsic.Control.If(V.Local.bExists,=,True)
+'	F.Intrinsic.UI.Msgbox("PURORDER.txt file can not be deleted from the Files Directory.","Can not delete file!",64)
+'	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+'F.Intrinsic.Control.Else
+	F.Intrinsic.File.String2File(V.Local.sFilePath,V.Global.sUpload)
+	F.ODBC.conX!rstWO.Close
+	F.ODBC.conX!rstPO.Close
+'F.Intrinsic.Control.EndIf
+
+
+
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("BuildFile_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.BuildFile.End
+
+Program.Sub.RecordA.Start
+F.Intrinsic.Control.SetErrorHandler("RecordA_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sTemp.Declare(String)
+V.Local.sFill.Declare(String)
+V.Local.sdate.Declare(String)
+V.Local.ssql.Declare(String)
+V.Local.stax.Declare(String)
+
+
+'PO Number, include filler of 2
+F.Intrinsic.String.RPad(V.Global.sPO," ",9,V.local.sTemp)
+'Always will be record type of A
+F.Intrinsic.String.Concat(V.local.Stemp,"A",V.local.sTemp)
+
+'tax flag
+F.Intrinsic.String.Concat("select order_tax from V_PO_HEADER where purchase_order ='",V.global.sPO,V.local.ssql)
+F.Intrinsic.String.Concat(V.Local.ssql,"'",V.Local.ssql)
+Function.ODBC.Connection!conx.ExecuteAndReturn(V.Local.ssql,V.Local.stax)
+F.Intrinsic.String.RPad(V.Local.sTemp," ",10,V.Local.sTemp)
+F.Intrinsic.String.Concat(V.Local.sTemp,V.Local.stax,V.Local.sTemp)
+
+
+'closed flag of N
+F.Intrinsic.String.RPad(V.Local.sTemp," ",173,V.Local.sTemp)
+F.Intrinsic.String.Concat(V.Local.sTemp,"N",V.Local.sTemp)
+
+'POdate
+F.Intrinsic.String.Format(V.Ambient.Date,"MMDDYY",V.local.sdate)
+F.Intrinsic.String.RPad(V.Local.sTemp," ",195,V.Local.sTemp)
+F.Intrinsic.String.Concat(V.Local.sTemp,V.Local.sdate,V.Local.sTemp)
+
+'Print flag of X
+F.Intrinsic.String.RPad(V.Local.sTemp," ",261,V.Local.stemP)
+F.Intrinsic.String.Concat(V.Local.sTemp,"X",V.Local.sTemp)
+
+'vendor number
+F.Intrinsic.String.RPad(V.Local.sTemp," ",267,V.local.stemp)
+F.Intrinsic.String.Concat(V.Local.sTemp,V.ODBC.conX!rstPO.FieldValTrim!Vendor,V.Local.sTemp)
+
+F.Intrinsic.String.RPad(V.Local.sTemp," ",395,V.local.stemp)
+
+F.Intrinsic.String.Concat(V.Local.sTemp,V.Ambient.NewLine,V.Global.sUpload)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("RecordA_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.RecordA.End
+
+Program.Sub.RecordBC.Start
+F.Intrinsic.Control.SetErrorHandler("RecordBC_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.stemp.Declare(String)
+V.Local.sSQL.Declare(String)
+
+
+
+V.Local.iC.Declare(Long)
+
+'two times, once for B and once for c
+F.Intrinsic.Control.For(V.Local.iC,0,1,1)
+	'po and filler
+	F.Intrinsic.String.RPad(V.Global.sPO," ",9,V.Local.stemp)
+	'either b or c
+	F.Intrinsic.Control.If(V.Local.iC,=,0)
+		F.Intrinsic.String.Concat(V.Local.stemp,"B",V.Local.sTemp)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Concat(V.Local.stemp,"C",V.Local.stemp)
+	F.Intrinsic.Control.EndIf
+	'vendor name?
+	F.Intrinsic.String.Concat("Select Name_Vendor, Currency From V_Vendor_Master Left Join V_Vendor_Curr On V_Vendor_Master.Vendor = V_Vendor_Curr.Vendor Where Vendor = '",V.ODBC.conX!rstPO.FieldValTrim!Vendor,"'",V.Local.ssQL)
+	F.ODBC.Connection!conX.OpenLocalRecordsetRO("rstVend",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.conX!rstVend.EOF,<>,True)
+		F.Intrinsic.String.Concat(V.Local.stemp,V.ODBC.conX!rstVend.FieldValTrim!Name_Vendor,V.Local.stemp)
+		V.Global.sVCurr.Set(V.ODBC.conX!rstVend.FieldValTrim!Currency)
+	F.Intrinsic.Control.Else
+		'this may be a problem if the vendor name doesn't exist?
+		F.Intrinsic.String.RPad(V.Local.stemp," ",40,V.Local.stemp)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.conX!rstVend.Close
+	F.Intrinsic.String.RPad(V.Local.stemp," ",327,V.local.sTemp)
+
+	'endor number is used only for the bill to only record record of b
+	F.Intrinsic.Control.If(V.Local.iC,=,0)
+		'vendor number
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.ODBC.conX!rstPO.FieldValTrim!Vendor,V.Local.stemp)
+	F.Intrinsic.Control.EndIf
+	'fill to 490
+	F.Intrinsic.String.RPad(V.Local.stemp," ",490,V.local.stemp)
+
+	F.Intrinsic.String.Concat(V.Global.sUpload,V.Local.stemp,V.Ambient.NewLine,V.global.sUpload)
+	V.local.stemp.set("")
+F.Intrinsic.Control.Next(V.Local.iC)
+
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("RecordBC_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.RecordBC.End
+
+Program.Sub.POLine.Start
+F.Intrinsic.Control.SetErrorHandler("POLine_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sTemp.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sMess.Declare(String)
+V.Local.iLine.Declare(Long)
+V.Local.sLine.Declare(String)
+V.Local.bOnLineOp.Declare(Boolean)
+V.local.sPartRev.Declare(String)
+V.Local.sPart.Declare(String)
+V.Local.sRev.Declare(String)
+V.Local.sUMPurch.declare(String)
+V.Local.sDesc.Declare(String)
+V.Local.sDate.Declare(String)
+
+
+F.Intrinsic.String.Build("Select * From V_Job_Operations Where Job = '{0}' And Suffix ='{1}' And LMO = 'O' And Seq <'995000' ",V.Global.sJob.Trim,V.Global.sSuffix.Trim,V.Local.sSQL)
+F.ODBC.Connection!conX.OpenLocalRecordsetRO("rstOp",V.Local.sSQL)
+
+F.Intrinsic.Control.If(V.ODBC.conX!rstOp.EOF,=,True)
+	F.Intrinsic.String.Build("Outside sequences for Work Order, {0} {1}, not found.",V.Global.sJob.Trim,V.Global.sSuffix.Trim,V.Local.sMess)
+	F.Intrinsic.UI.Msgbox(V.Local.sMess,"Outside Operations not found.",64)
+	F.ODBC.conX!rstOp.Close
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+F.Intrinsic.Control.Else
+	V.Local.iLine.Set(1)
+	'loop through our lines adding a new line to our file upload
+	F.Intrinsic.Control.DoUntil(V.ODBC.conX!rstOp.EOF,=,True)
+		'rpad our line long variable into our string variable
+		F.Intrinsic.String.LPad(V.Local.iLine,"0",3,V.Local.sLine)
+		F.Intrinsic.String.RPad(V.Global.sPO.Trim," ",7,V.Local.sTemp)
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.Local.sLine,V.Local.sTemp)
+		
+		'part number
+		'comes from WO rst
+'		F.Intrinsic.String.Concat(V.local.sTemp,V.ODBC.conX!rstWO.FieldValTrim!Part,V.Local.sTemp)
+'		F.Intrinsic.String.RPad(V.Local.sTemp," ",32,V.Local.sTemp)
+		'have to read an option to figure out whether or not we place an * symbol in the 17'th character of the part
+		F.Global.General.ReadOption("400743",0,0,V.Local.bOnLineOp)
+		F.Intrinsic.Control.If(V.Local.bOnLineOp,=,True)
+			F.Intrinsic.String.RPad(V.ODBC.conX!rstWO.FieldValTrim!Part," ",20,V.Local.sPartRev)
+			F.Intrinsic.String.Left(V.local.sPartRev,16,V.Local.sPart)
+			F.Intrinsic.String.Right(V.Local.sPartRev,3,V.Local.sRev)
+			F.Intrinsic.String.Build("{0}*{1}",V.local.sPart,V.local.sRev,V.local.sPartRev)
+		F.Intrinsic.Control.Else
+			V.Local.sPartRev.Set(V.ODBC.conX!rstWO.FieldValTrim!Part)
+		F.Intrinsic.Control.Endif
+		
+		F.Intrinsic.String.RPad(V.local.sPartRev," ",20,V.Local.sPartRev)
+		F.Intrinsic.String.Build("{0}{1}",V.Local.sTemp,V.Local.sPartRev,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",32,V.local.stemp)
+
+		'get um purchasing.
+		V.Local.sUMPurch.Set(V.ODBC.conX!rstOp.FieldValLTrim!UM)
+		'description
+		V.Local.sDesc.Set(V.ODBC.conX!rstOp.FieldValLTrim!description)
+		F.Intrinsic.String.RPad(V.Local.sDesc," ",30,V.local.sDesc)
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.local.sDesc,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",62,V.Local.sTemp)
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.local.sUMPurch,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",65,V.Local.sTemp)
+
+		'now our work order number
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.Global.sJob,V.Local.sTemp)
+		
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.ODBC.conX!rstOp.FieldValTrim!Seq,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",124,V.Local.sTemp)
+		F.Intrinsic.String.Format(V.ODBC.conX!rstOp.FieldValLTrim!date_due,"MMDDYY",V.Local.sDate)
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.Local.sDate,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",136,V.Local.sTemp)
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.ODBC.conX!rstOp.FieldVal!Burden,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",168,V.Local.sTemp)
+		'purcahsing qty
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.ODBC.conX!rstOp.FieldVal!Hours_Estimated,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",232,V.Local.sTemp)
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.ODBC.conX!rstOp.FieldVal!Hours_Estimated,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",266,V.Local.sTemp)
+		
+	'	'work order suffix
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.Global.sSuffix,V.Local.sTemp)
+		F.Intrinsic.String.RPad(V.Local.sTemp," ",339,V.Local.sTemp)
+		
+		'Exchange Currency
+		F.Intrinsic.String.Concat(V.Local.sTemp,V.Global.sVCurr,V.Local.sTemp)
+
+		F.Intrinsic.String.RPad(V.Local.stemp," ",587,V.Local.sTemp)
+	
+		'Cost Source Code of O
+		F.Intrinsic.String.Concat(V.Local.sTemp,"O",V.Local.stemp)
+		F.Intrinsic.String.Rpad(V.Local.sTemp," ",600,V.Local.sTemp)
+		F.Intrinsic.String.Concat(V.Global.sUpload,V.Local.sTemp,V.Ambient.NewLine,V.Global.sUpload)
+		V.Local.sTemp.Set("")
+		F.ODBC.conX!rstOp.MoveNext
+		F.Intrinsic.Math.Add(V.Local.iLine,1,V.Local.iLine)
+	F.Intrinsic.Control.loop
+	F.ODBC.conX!rstOP.Close
+F.Intrinsic.Control.EndIf
+
+
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("POLine_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.POLine.End
+
+Program.Sub.UPLPUROR_Call.Start
+F.Intrinsic.Control.SetErrorHandler("UPLPUROR_Call_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+F.global.General.callwrappersync(50,"UPLPUROR/A")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("UPLPUROR_Call_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.UPLPUROR_Call.End
+
+Program.Sub.Open_PO.Start
+F.Intrinsic.Control.SetErrorHandler("Open_PO_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sParam.Declare(String)
+V.Local.iRet.Declare(String)
+
+F.Intrinsic.UI.Msgbox("Print PO?","Print PO",4,V.Local.iRet)
+F.Intrinsic.Control.If(V.Local.iRet,=,6)
+
+	'call our call wrapper to get our po.
+'	F.Intrinsic.String.Build("{0}!*!{1}!*!{2}",V.Global.sPO.Trim,"O","",V.Local.sParam)
+	f.Intrinsic.String.Build("{0}!*!S!*!N!*!Y!*!N",v.Global.sPO.Trim,v.Local.sParam)
+	F.Intrinsic.Debug.SetLA("Params: ",V.Local.sParam)
+	F.Global.General.CallwrapperSync(915000,V.Local.sParam)
+'	F.Global.General.CallWrapperSync(175200,V.Local.sParam)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Open_PO_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_Auto_POLines.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Open_PO.End
+
+
